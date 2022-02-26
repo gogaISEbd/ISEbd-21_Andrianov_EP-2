@@ -23,7 +23,7 @@ namespace CarRepairShopView
             {
                 var list = _logicP.Read(null);
                 comboBoxProduct.DataSource = list;
-                comboBoxProduct.DisplayMember = "ProductName";
+                comboBoxProduct.DisplayMember = "repairName";
                 comboBoxProduct.ValueMember = "Id";
             }
             catch (Exception ex)
