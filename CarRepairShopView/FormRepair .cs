@@ -33,7 +33,7 @@ namespace CarRepairShopView
                     })?[0];
                     if (view != null)
                     {
-                        textBoxName.Text = view.ProductName;
+                        textBoxName.Text = view.repairName;
                         textBoxPrice.Text = view.Price.ToString();
                         repairComponents = view.RepairComponents;
                         LoadData();

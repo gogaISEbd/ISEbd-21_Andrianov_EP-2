@@ -1,7 +1,8 @@
 using CarRepairShopBusinessLogic.BusinessLogics;
 using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.StoragesContracts;
-using CarRepairShopListImplement.Implements;
+using CarRepairShopFileImplement.Implements;
+using CarRepairShopFileImplement;
 using System;
 using System.Windows.Forms;
 using Unity;
@@ -37,6 +38,8 @@ namespace CarRepairShopView
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(Container.Resolve<FormMain>());
+            FileDataListSingleton fd = FileDataListSingleton.GetInstance();
+            fd.SaveAllData();
         }
         private static IUnityContainer BuildUnityContainer()
         {
