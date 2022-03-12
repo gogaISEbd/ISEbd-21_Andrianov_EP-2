@@ -1,20 +1,20 @@
 using CarRepairShopBusinessLogic.BusinessLogics;
 using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.StoragesContracts;
-using CarRepairShopListImplement.Implements;
+using CarRepairShopFileImplement.Implements;
+using CarRepairShopFileImplement;
 using System;
 using System.Windows.Forms;
 using Unity;
 using Unity.Lifetime;
 
 
+
 namespace CarRepairShopView
 {
     static class Program
     {
-        /// <summary>
-        /// Главная точка входа для приложения.
-        /// </summary>
+        
         private static IUnityContainer container = null;
         public static IUnityContainer Container
         {
@@ -37,6 +37,8 @@ namespace CarRepairShopView
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(Container.Resolve<FormMain>());
+            FileDataListSingleton fd = FileDataListSingleton.GetInstance();
+            fd.SaveAllData();
         }
         private static IUnityContainer BuildUnityContainer()
         {
@@ -57,3 +59,5 @@ namespace CarRepairShopView
         }
     }
 }
+    
+
