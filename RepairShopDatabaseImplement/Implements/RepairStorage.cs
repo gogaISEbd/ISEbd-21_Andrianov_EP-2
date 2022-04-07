@@ -48,8 +48,7 @@ namespace CarRepairShopDatabaseImplement.Implements
             var repair = context.Repair
             .Include(rec => rec.RepairComponent)
             .ThenInclude(rec => rec.Component)
-            .FirstOrDefault(rec => rec.RepairName == model.RepairName ||
-            rec.Id == model.Id);
+            .FirstOrDefault(rec => rec.RepairName == model.RepairName || rec.Id == model.Id);
             return repair != null ? CreateModel(repair) : null;
         }
         public void Insert(RepairBindingModel model)
@@ -58,9 +57,14 @@ namespace CarRepairShopDatabaseImplement.Implements
             using var transaction = context.Database.BeginTransaction();
             try
             {
-                context.Repair.Add(CreateModel(model, new repair(), context));
-
+                repair repair = new repair()
+                {
+                    RepairName = model.RepairName,
+                    Price = model.Price
+                };
+                context.Repair.Add(repair);
                 context.SaveChanges();
+                CreateModel(model, repair, context);
                 transaction.Commit();
             }
             catch
@@ -75,8 +79,7 @@ namespace CarRepairShopDatabaseImplement.Implements
             using var transaction = context.Database.BeginTransaction();
             try
             {
-                var element = context.Repair.FirstOrDefault(rec => rec.Id ==
-                model.Id);
+                var element = context.Repair.FirstOrDefault(rec => rec.Id == model.Id);
                 if (element == null)
                 {
                     throw new Exception("Элемент не найден");
@@ -94,8 +97,7 @@ namespace CarRepairShopDatabaseImplement.Implements
         public void Delete(RepairBindingModel model)
         {
             using var context = new CarRepairDatabase();
-            repair element = context.Repair.FirstOrDefault(rec => rec.Id ==
-            model.Id);
+            repair element = context.Repair.FirstOrDefault(rec => rec.Id == model.Id);
             if (element != null)
             {
                 context.Repair.Remove(element);
@@ -106,24 +108,23 @@ namespace CarRepairShopDatabaseImplement.Implements
                 throw new Exception("Элемент не найден");
             }
         }
-        private static repair CreateModel(RepairBindingModel model, repair repair,
-       CarRepairDatabase context)
+        private static repair CreateModel(RepairBindingModel model, repair repair, CarRepairDatabase context)
         {
             repair.RepairName = model.RepairName;
             repair.Price = model.Price;
             if (model.Id.HasValue)
             {
                 var repairComponents = context.RepairComponent.Where(rec =>
-               rec.RepairId == model.Id.Value).ToList();
+                rec.RepairId == model.Id.Value).ToList();
                 // удалили те, которых нет в модели
                 context.RepairComponent.RemoveRange(repairComponents.Where(rec =>
-               !model.RepairComponents.ContainsKey(rec.ComponentId)).ToList());
+                !model.RepairComponents.ContainsKey(rec.ComponentId)).ToList());
                 context.SaveChanges();
                 // обновили количество у существующих записей
                 foreach (var updateComponent in repairComponents)
                 {
                     updateComponent.Count =
-                   model.RepairComponents[updateComponent.ComponentId].Item2;
+                    model.RepairComponents[updateComponent.ComponentId].Item2;
                     model.RepairComponents.Remove(updateComponent.ComponentId);
                 }
                 context.SaveChanges();
@@ -152,8 +153,8 @@ namespace CarRepairShopDatabaseImplement.Implements
             .ToDictionary(recPC => recPC.ComponentId,
             recPC => (recPC.Component?.ComponentName, recPC.Count))
             };
+
+
         }
-
-
     }
 }
