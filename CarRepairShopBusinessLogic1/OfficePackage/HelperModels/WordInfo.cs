@@ -11,6 +11,6 @@ namespace CarRepairShopBusinessLogic.OfficePackage.HelperModels
     {
         public string FileName { get; set; }
         public string Title { get; set; }
-        public List<ComponentViewModel> Components { get; set; }
+        public List<RepairViewModel> Repairs{ get; set; }
     }
 }

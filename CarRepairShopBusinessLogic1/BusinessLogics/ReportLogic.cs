@@ -37,23 +37,18 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             var components = _componentStorage.GetFullList();
             var repairs = _repairStorage.GetFullList();
             var list = new List<ReportRepairComponentViewModel>();
-            foreach (var component in components)
+            foreach (var repair in repairs)
             {
                 var record = new ReportRepairComponentViewModel
                 {
-                    ComponentName = component.ComponentName,
-                    Products = new List<Tuple<string, int>>(),
+                    RepairName = repair.repairName,
+                    Components = new List<Tuple<string, int>>(),
                     TotalCount = 0
                 };
-                foreach (var repair in repairs)
+                foreach (var component in repair.RepairComponents)
                 {
-                    if (repair.RepairComponents.ContainsKey(component.Id))
-                    {
-                        record.Products.Add(new Tuple<string, int>(repair.repairName,
-                       repair.RepairComponents[component.Id].Item2));
-                        record.TotalCount +=
-                       repair.RepairComponents[component.Id].Item2;
-                    }
+                    record.Components.Add(new Tuple<string, int>(component.Value.Item1, component.Value.Item2));
+                    record.TotalCount += component.Value.Item2;
                 }
                 list.Add(record);
             }
@@ -92,7 +87,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             {
                 FileName = model.FileName,
                 Title = "Список компонент",
-                Components = _componentStorage.GetFullList()
+                Repairs= _repairStorage.GetFullList()
             });
         }
         /// <summary>
@@ -104,7 +99,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             _saveToExcel.CreateReport(new ExcelInfo
             {
                 FileName = model.FileName,
-                Title = "Список компонент",
+                Title = "Список изделий",
                 RepairComponents = GetProductComponent()
             });
         }

@@ -36,7 +36,8 @@ namespace CarRepairShopListImplement.Implements
             List<OrderViewModel> result = new List<OrderViewModel>();
             foreach (var order in source.Orders)
             {
-                if (order.ProductId.ToString().Contains(model.ProductId.ToString()))
+                if (order.ProductId == model.ProductId||
+                        (model.DateFrom.GetHashCode() != 0 && model.DateTo.GetHashCode() != 0 && order.DateCreate >= model.DateFrom && order.DateCreate <= model.DateTo))
                 {
                     result.Add(CreateModel(order));
                 }
@@ -132,7 +133,7 @@ namespace CarRepairShopListImplement.Implements
                 ProductId = order.ProductId,
                 Sum = order.Sum,
                 Count = order.Count,
-                Status = order.Status,
+                Status = Enum.GetName(order.Status),
                 ProductName = packageName,
                 DateCreate = order.DateCreate,
                 DateImplement = order.DateImplement

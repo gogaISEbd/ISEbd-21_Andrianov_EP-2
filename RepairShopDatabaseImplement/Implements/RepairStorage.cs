@@ -44,12 +44,15 @@ namespace CarRepairShopDatabaseImplement.Implements
             {
                 return null;
             }
-            using var context = new CarRepairDatabase();
-            var repair = context.Repair
-            .Include(rec => rec.RepairComponent)
-            .ThenInclude(rec => rec.Component)
-            .FirstOrDefault(rec => rec.RepairName == model.RepairName || rec.Id == model.Id);
-            return repair != null ? CreateModel(repair) : null;
+            using (var context = new CarRepairDatabase())
+            {
+                repair repair = context.Repair
+                    .Include(rec => rec.RepairComponent)
+                    .ThenInclude(rec => rec.Component)
+                    .FirstOrDefault(rec => rec.RepairName == model.RepairName || rec.Id == model.Id);
+
+                return repair != null ? CreateModel(repair) : null;
+            }
         }
         public void Insert(RepairBindingModel model)
         {
@@ -75,24 +78,32 @@ namespace CarRepairShopDatabaseImplement.Implements
         }
         public void Update(RepairBindingModel model)
         {
-            using var context = new CarRepairDatabase();
-            using var transaction = context.Database.BeginTransaction();
-            try
+            using (var context = new CarRepairDatabase())
             {
-                var element = context.Repair.FirstOrDefault(rec => rec.Id == model.Id);
-                if (element == null)
+                using (var transaction = context.Database.BeginTransaction())
                 {
-                    throw new Exception("Элемент не найден");
+                    try
+                    {
+                        repair repair = context.Repair.FirstOrDefault(rec => rec.Id == model.Id);
+                        if (repair == null)
+                        {
+                            throw new Exception("Элемент не найден");
+                        }
+                        repair.RepairName = model.RepairName;
+                        repair.Price = model.Price;
+
+                        CreateModel(model, repair, context);
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
-                CreateModel(model, element, context);
-                context.SaveChanges();
-                transaction.Commit();
             }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+
         }
         public void Delete(RepairBindingModel model)
         {

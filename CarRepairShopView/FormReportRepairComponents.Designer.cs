@@ -45,6 +45,7 @@ namespace CarRepairShopView
             this.ButtonSaveToExcel.TabIndex = 0;
             this.ButtonSaveToExcel.Text = "Сохранить в Excel";
             this.ButtonSaveToExcel.UseVisualStyleBackColor = true;
+            this.ButtonSaveToExcel.Click += new System.EventHandler(this.ButtonSaveToExcel_Click);
             // 
             // dataGridView
             // 
@@ -61,12 +62,12 @@ namespace CarRepairShopView
             // 
             // Column1
             // 
-            this.Column1.HeaderText = "Компонент";
+            this.Column1.HeaderText = "Изделие";
             this.Column1.Name = "Column1";
             // 
             // Column2
             // 
-            this.Column2.HeaderText = "Изделие";
+            this.Column2.HeaderText = "Компонент";
             this.Column2.Name = "Column2";
             // 
             // Column3
@@ -83,6 +84,7 @@ namespace CarRepairShopView
             this.Controls.Add(this.ButtonSaveToExcel);
             this.Name = "FormReportRepairComponents";
             this.Text = "Компоненты по изделиям";
+            this.Load += new System.EventHandler(this.FormReportRepairComponents_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
 

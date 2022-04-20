@@ -1,4 +1,6 @@
 using CarRepairShopBusinessLogic.BusinessLogics;
+using CarRepairShopBusinessLogic.OfficePackage;
+using CarRepairShopBusinessLogic.OfficePackage.Implements;
 using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.StoragesContracts;
 using CarRepairShopDatabaseImplement.Implements;
@@ -13,7 +15,7 @@ namespace CarRepairShopView
 {
     static class Program
     {
-        
+
         private static IUnityContainer container = null;
         public static IUnityContainer Container
         {
@@ -36,7 +38,7 @@ namespace CarRepairShopView
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(Container.Resolve<FormMain>());
-            
+
         }
         private static IUnityContainer BuildUnityContainer()
         {
@@ -53,9 +55,18 @@ namespace CarRepairShopView
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairLogic, RepairLogic>(new
             HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IReportLogic, ReportLogic>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToExcel, SaveToExcel>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToWord, SaveToWord>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToPdf, SaveToPdf>(new
+            HierarchicalLifetimeManager());
             return currentContainer;
+
         }
     }
 }
-    
+
 
