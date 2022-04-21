@@ -3,6 +3,7 @@ using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.ViewModels;
 using System;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 
 namespace CarRepairShopView
@@ -11,20 +12,35 @@ namespace CarRepairShopView
     {
         private readonly IRepairLogic _logicP;
         private readonly IOrderLogic _logicO;
-        public FormCreateOrder(IRepairLogic logicP, IOrderLogic logicO)
+        private readonly IClientLogic _logicС;
+        public FormCreateOrder(IRepairLogic logicP, IOrderLogic logicO, IClientLogic logicС)
         {
             InitializeComponent();
             _logicP = logicP;
             _logicO = logicO;
+            _logicС = logicС;
         }
         private void FormCreateOrder_Load(object sender, EventArgs e)
         {
             try
             {
-                var list = _logicP.Read(null);
-                comboBoxProduct.DataSource = list;
-                comboBoxProduct.DisplayMember = "repairName";
-                comboBoxProduct.ValueMember = "Id";
+                List<ClientViewModel> listC = _logicС.Read(null);
+                if (listC != null)
+                {
+                    comboBoxClient.DisplayMember = "ClientFIO";
+                    comboBoxClient.ValueMember = "Id";
+                    comboBoxClient.DataSource = listC;
+                    comboBoxClient.SelectedItem = null;
+                }
+
+                List<RepairViewModel> listP = _logicP.Read(null);
+                if (listP != null)
+                {
+                    comboBoxProduct.DisplayMember = "RepairName";
+                    comboBoxProduct.ValueMember = "Id";
+                    comboBoxProduct.DataSource = listP;
+                    comboBoxProduct.SelectedItem = null;
+                }
             }
             catch (Exception ex)
             {
@@ -35,7 +51,7 @@ namespace CarRepairShopView
         private void CalcSum()
         {
             if (comboBoxProduct.SelectedValue != null &&
-           !string.IsNullOrEmpty(textBoxCount.Text))
+            !string.IsNullOrEmpty(textBoxCount.Text))
             {
                 try
                 {
@@ -43,7 +59,6 @@ namespace CarRepairShopView
                     RepairViewModel product = _logicP.Read(new RepairBindingModel
                     {
                         Id = id
-
                     })?[0];
                     int count = Convert.ToInt32(textBoxCount.Text);
                     textBoxSum.Text = (count * product?.Price ?? 0).ToString();
@@ -51,7 +66,7 @@ namespace CarRepairShopView
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK,
-                   MessageBoxIcon.Error);
+                    MessageBoxIcon.Error);
                 }
             }
         }
@@ -81,6 +96,7 @@ namespace CarRepairShopView
             {
                 _logicO.CreateOrder(new CreateOrderBindingModel
                 {
+                    ClientId = Convert.ToInt32(comboBoxClient.SelectedValue),
                     ProductId = Convert.ToInt32(comboBoxProduct.SelectedValue),
                     Count = Convert.ToInt32(textBoxCount.Text),
                     Sum = Convert.ToDecimal(textBoxSum.Text)
