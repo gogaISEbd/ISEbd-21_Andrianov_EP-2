@@ -8,6 +8,7 @@ namespace CarRepairShopDatabaseImplement.Models
     public class Order
     {
         public int Id { get; set; }
+        public int ClientId { get; set; }
 
         public int RepairId { get; set; }
 
@@ -25,5 +26,6 @@ namespace CarRepairShopDatabaseImplement.Models
 
         public DateTime? DateImplement { get; set; }
         public virtual repair Repair{ get; set; }
+        public virtual Client Client { get; set; }
     }
 }

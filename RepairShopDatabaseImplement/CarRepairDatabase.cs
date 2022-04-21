@@ -20,6 +20,7 @@ namespace CarRepairShopDatabaseImplement
         public virtual DbSet<RepairComponent> RepairComponent { set; get; }
 
         public virtual DbSet<Order> Orders { set; get; }
+        public virtual DbSet<Client> Clients { set; get; }
     }
 }
 

@@ -12,16 +12,19 @@ namespace CarRepairShopFileImplement.Implements
     public class RepairStorage : IRepairStorage
     {
         private readonly FileDataListSingleton source;
+
         public RepairStorage()
         {
             source = FileDataListSingleton.GetInstance();
         }
+
         public List<RepairViewModel> GetFullList()
         {
             return source.repairs
-            .Select(CreateModel)
-            .ToList();
+                .Select(CreateModel)
+                .ToList();
         }
+
         public List<RepairViewModel> GetFilteredList(RepairBindingModel model)
         {
             if (model == null)
@@ -29,92 +32,93 @@ namespace CarRepairShopFileImplement.Implements
                 return null;
             }
             return source.repairs
-            .Where(rec => rec.repairName.Contains(model.RepairName))
-            .Select(CreateModel)
-            .ToList();
+                .Where(recRepairs => recRepairs.repairName.Contains(model.RepairName))
+                .Select(CreateModel)
+                .ToList();
         }
+
         public RepairViewModel GetElement(RepairBindingModel model)
         {
             if (model == null)
             {
                 return null;
             }
-            var product = source.repairs
-            .FirstOrDefault(rec => rec.repairName == model.RepairName || rec.Id
-           == model.Id);
-            return product != null ? CreateModel(product) : null;
+
+            repair repair = source.repairs.FirstOrDefault(recRepairs => recRepairs.repairName == model.RepairName || recRepairs.Id == model.Id);
+            return repair != null ? CreateModel(repair) : null;
         }
+
         public void Insert(RepairBindingModel model)
         {
-            int maxId = source.repairs.Count > 0 ? source.Components.Max(rec => rec.Id)
-   : 0;
-            var element = new repair
+            int maxId = source.repairs.Count > 0 ? source.repairs.Max(recRepair => recRepair.Id) : 0;
+            var repair = new repair
             {
                 Id = maxId + 1,
-                repairComponents = new
-           Dictionary<int, int>()
+                repairComponents = new Dictionary<int, int>()
             };
-            source.repairs.Add(CreateModel(model, element));
+            source.repairs.Add(CreateModel(model, repair));
         }
+
         public void Update(RepairBindingModel model)
         {
-            var element = source.repairs.FirstOrDefault(rec => rec.Id == model.Id);
-            if (element == null)
+            repair repair = source.repairs.FirstOrDefault(recRepair => recRepair.Id == model.Id);
+            if (repair == null)
             {
-                throw new Exception("Элемент не найден");
+                throw new Exception("Изделие не найдена");
             }
-            CreateModel(model, element);
+            CreateModel(model, repair);
         }
+
         public void Delete(RepairBindingModel model)
         {
-            repair element = source.repairs.FirstOrDefault(rec => rec.Id == model.Id);
-            if (element != null)
+            repair repair = source.repairs.FirstOrDefault(recRepair => recRepair.Id == model.Id);
+            if (repair != null)
             {
-                source.repairs.Remove(element);
+                source.repairs.Remove(repair);
             }
             else
             {
-                throw new Exception("Элемент не найден");
+                throw new Exception("Пицца не найдена");
             }
         }
-        private static repair CreateModel(RepairBindingModel model, repair product)
+
+        private repair CreateModel(RepairBindingModel model, repair repair)
         {
-            product.repairName = model.RepairName;
-            product.Price = model.Price;
-            // удаляем убранные
-            foreach (var key in product.repairComponents.Keys.ToList())
+            repair.repairName = model.RepairName;
+            repair.Price = model.Price;
+
+            foreach (var key in repair.repairComponents.Keys.ToList())
             {
                 if (!model.RepairComponents.ContainsKey(key))
                 {
-                    product.repairComponents.Remove(key);
+                    repair.repairComponents.Remove(key);
                 }
             }
-            // обновляем существуюущие и добавляем новые
+
             foreach (var component in model.RepairComponents)
             {
-                if (product.repairComponents.ContainsKey(component.Key))
+                if (repair.repairComponents.ContainsKey(component.Key))
                 {
-                    product.repairComponents[component.Key] =
-                   model.RepairComponents[component.Key].Item2;
+                    repair.repairComponents[component.Key] = model.RepairComponents[component.Key].Item2;
                 }
                 else
                 {
-                    product.repairComponents.Add(component.Key,
-                   model.RepairComponents[component.Key].Item2);
+                    repair.repairComponents.Add(component.Key, model.RepairComponents[component.Key].Item2);
                 }
             }
-            return product;
+            return repair;
         }
-        private RepairViewModel CreateModel(repair product) {
+
+        private RepairViewModel CreateModel(repair repair)
+        {
             return new RepairViewModel
             {
-                Id = product.Id,
-                repairName = product.repairName,
-                Price = product.Price,
-                RepairComponents = product.repairComponents
-.ToDictionary(recPC => recPC.Key, recPC =>
-(source.Components.FirstOrDefault(recC => recC.Id ==
-recPC.Key)?.ComponentName, recPC.Value))
+                Id = repair.Id,
+                repairName = repair.repairName,
+                Price = repair.Price,
+                RepairComponents = repair.repairComponents
+                .ToDictionary(repairComponent => repairComponent.Key, repairComponent =>
+                (source.Components.FirstOrDefault(Component => Component.Id == repairComponent.Key)?.ComponentName, repairComponent.Value))
             };
         }
 
