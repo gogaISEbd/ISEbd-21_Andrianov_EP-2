@@ -131,7 +131,7 @@ namespace CarRepairShopFileImplement.Implements
                 ProductId = order.ProductId,
                 Sum = order.Sum,
                 Count = order.Count,
-                Status = order.Status,
+                Status = Enum.GetName(order.Status),
                 ProductName = packageName,
                 DateCreate = order.DateCreate,
                 DateImplement = order.DateImplement

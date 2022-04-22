@@ -52,7 +52,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             {
                 throw new Exception("Не найден заказ");
             }
-            if (order.Status != OrderStatus.Принят)
+            if (!order.Status.Equals("Принят"))
             {
                 throw new Exception("Заказ не в статусе \"Принят\"");
             }
@@ -78,7 +78,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             {
                 throw new Exception("Не найден заказ");
             }
-            if (order.Status != OrderStatus.Выполняется)
+            if (!order.Status.Equals("Выполняется"))
             {
                 throw new Exception("Заказ не в статусе \"Выполняется\"");
             }
@@ -103,7 +103,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             {
                 throw new Exception("Не найден заказ");
             }
-            if (order.Status != OrderStatus.Готов)
+            if (!order.Status.Equals("Готов"))
             {
                 throw new Exception("Заказ не в статусе \"Готов\"");
             }
