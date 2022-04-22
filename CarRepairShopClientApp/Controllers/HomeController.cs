@@ -112,7 +112,8 @@ namespace CarRepairShopClientApp.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            ViewBag.Pizzas = APIClient.GetRequest<List<RepairViewModel>>("api/main/getpizzalist");
+            var rep = APIClient.GetRequest<List<RepairViewModel>>("api/main/getrepairlist");
+            ViewBag.repair = rep;
             return View();
         }
 
@@ -136,7 +137,7 @@ namespace CarRepairShopClientApp.Controllers
         [HttpPost]
         public decimal Calc(decimal count, int repair)
         {
-            RepairViewModel _repair = APIClient.GetRequest<RepairViewModel>($"api/main/getpizza?pizzaId={repair}");
+            RepairViewModel _repair = APIClient.GetRequest<RepairViewModel>($"api/main/getrepair?repairId={repair}");
             return count * _repair.Price;
         }
     }
