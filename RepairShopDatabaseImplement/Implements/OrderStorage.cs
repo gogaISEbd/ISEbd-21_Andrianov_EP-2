@@ -16,79 +16,89 @@ namespace CarRepairShopDatabaseImplement.Implements
         public List<OrderViewModel> GetFullList()
         {
             using var context = new CarRepairDatabase();
-            return context.Orders
-            .Include(rec => rec.Repair)
-            .ToList()
-            .Select(CreateModel)
-            .ToList();
+
+            return context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).Select(rec => new OrderViewModel
+            {
+                Id = rec.Id,
+                ProductId = rec.RepairId,
+                ClientId = rec.ClientId,
+                ClientFIO = rec.Client.ClientFIO,
+                ProductName = rec.Repair.RepairName,
+                Count = rec.Count,
+                Sum = rec.Sum,
+                Status = rec.Status.ToString(),
+                DateCreate = rec.DateCreate,
+                DateImplement = rec.DateImplement
+            }).ToList();
         }
+
         public List<OrderViewModel> GetFilteredList(OrderBindingModel model)
         {
             if (model == null)
             {
                 return null;
             }
+
             using var context = new CarRepairDatabase();
-            return context.Orders
-            .Include(rec => rec.Repair)
-            .Where(rec => rec.Id.Equals(model.Id) || rec.DateCreate >= model.DateFrom && rec.DateCreate <= model.DateTo)
-            .ToList()
-            .Select(CreateModel)
-            .ToList();
+
+            return context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client)
+                .Where(rec => rec.RepairId == model.ProductId ||
+                (model.DateFrom.HasValue && model.DateTo.HasValue &&
+                rec.DateCreate >= model.DateFrom && rec.DateCreate <= model.DateTo) ||
+                model.ClientId.HasValue && rec.ClientId == model.ClientId).Select(rec => new OrderViewModel
+                {
+                    Id = rec.Id,
+                    ProductId = rec.RepairId,
+                    ClientId = rec.ClientId,
+                    ClientFIO = rec.Client.ClientFIO,
+                    ProductName = rec.Repair.RepairName,
+                    Count = rec.Count,
+                    Sum = rec.Sum,
+                    Status = rec.Status.ToString(),
+                    DateCreate = rec.DateCreate,
+                    DateImplement = rec.DateImplement
+                }).ToList();
         }
+
         public OrderViewModel GetElement(OrderBindingModel model)
         {
             if (model == null)
             {
                 return null;
             }
+
             using var context = new CarRepairDatabase();
-            var order = context.Orders
-            .Include(rec => rec.Repair)
-            .FirstOrDefault(rec => rec.Id == model.Id);
-            return order != null ? CreateModel(order) : null;
+
+            var order = context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).FirstOrDefault(rec => rec.Id == model.Id);
+
+            return order != null ? CreateModel(order, context) : null;
         }
+
         public void Insert(OrderBindingModel model)
         {
             using var context = new CarRepairDatabase();
-            using var transaction = context.Database.BeginTransaction();
-            try
-            {
-                context.Orders.Add(CreateModel(model, new Order()));
-                context.SaveChanges();
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+
+            context.Orders.Add(CreateModel(model, new Order()));
+            context.SaveChanges();
         }
+
         public void Update(OrderBindingModel model)
         {
             using var context = new CarRepairDatabase();
-            using var transaction = context.Database.BeginTransaction();
-            try
+            var element = context.Orders.FirstOrDefault(rec => rec.Id == model.Id);
+            if (element == null)
             {
-                var element = context.Orders.FirstOrDefault(rec => rec.Id == model.Id);
-                if (element == null)
-                {
-                    throw new Exception("Элемент не найден");
-                }
-                CreateModel(model, element);
-                context.SaveChanges();
-                transaction.Commit();
+                throw new Exception("Элемент не найден");
             }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            CreateModel(model, element);
+            context.SaveChanges();
         }
+
         public void Delete(OrderBindingModel model)
         {
             using var context = new CarRepairDatabase();
             Order element = context.Orders.FirstOrDefault(rec => rec.Id == model.Id);
+
             if (element != null)
             {
                 context.Orders.Remove(element);
@@ -99,9 +109,11 @@ namespace CarRepairShopDatabaseImplement.Implements
                 throw new Exception("Элемент не найден");
             }
         }
+
         private static Order CreateModel(OrderBindingModel model, Order order)
         {
             order.RepairId = model.ProductId;
+            order.ClientId = model.ClientId.Value;
             order.Count = model.Count;
             order.Sum = model.Sum;
             order.Status = model.Status;
@@ -109,20 +121,23 @@ namespace CarRepairShopDatabaseImplement.Implements
             order.DateImplement = model.DateImplement;
             return order;
         }
-        private static OrderViewModel CreateModel(Order order)
+
+        private static OrderViewModel CreateModel(Order order, CarRepairDatabase context)
         {
-            using var context = new CarRepairDatabase();
             return new OrderViewModel
             {
                 Id = order.Id,
                 ProductId = order.RepairId,
+                ClientId = order.ClientId,
+                ClientFIO = order.Client.ClientFIO,
                 ProductName = order.Repair.RepairName,
                 Count = order.Count,
                 Sum = order.Sum,
-                Status = Enum.GetName(order.Status),
+                Status = order.Status.ToString(),
                 DateCreate = order.DateCreate,
                 DateImplement = order.DateImplement
             };
         }
     }
-}
+ }
+

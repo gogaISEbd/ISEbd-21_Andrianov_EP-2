@@ -34,6 +34,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
         {
             _orderStorage.Insert(new OrderBindingModel
             {
+                ClientId = model.ClientId,
                 ProductId = model.ProductId,
                 Count = model.Count,
                 Sum = model.Sum,
@@ -59,6 +60,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             _orderStorage.Update(new OrderBindingModel
             {
                 Id = order.Id,
+                ClientId = order.ClientId,
                 ProductId = order.ProductId,
                 Count = order.Count,
                 Sum = order.Sum,
@@ -85,6 +87,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             _orderStorage.Update(new OrderBindingModel
             {
                 Id = order.Id,
+                ClientId = order.ClientId,
                 ProductId = order.ProductId,
                 Count = order.Count,
                 Sum = order.Sum,
@@ -110,6 +113,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             _orderStorage.Update(new OrderBindingModel
             {
                 Id = order.Id,
+                ClientId = order.ClientId,
                 ProductId = order.ProductId,
                 Count = order.Count,
                 Sum = order.Sum,

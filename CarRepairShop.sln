@@ -13,7 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarRepairShopListImplement"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarRepairShopFileImplement", "CarRepairShopFileImplement\CarRepairShopFileImplement.csproj", "{D1328C2E-E1EC-4E08-BBBF-E5E604125751}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarRepairShopDatabaseImplement", "RepairShopDatabaseImplement\CarRepairShopDatabaseImplement.csproj", "{F922B4C4-4E2D-4390-B454-2D77A96A86CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarRepairShopDatabaseImplement", "RepairShopDatabaseImplement\CarRepairShopDatabaseImplement.csproj", "{F922B4C4-4E2D-4390-B454-2D77A96A86CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarRepairShopRestApi", "CarRepairShopRestApi\CarRepairShopRestApi.csproj", "{FDE38545-ADAE-4F92-92E1-2BAD38750AF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarRepairShopClientApp", "CarRepairShopClientApp\CarRepairShopClientApp.csproj", "{15C83CC0-D8D8-49DE-953F-E16D1E615EA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{F922B4C4-4E2D-4390-B454-2D77A96A86CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F922B4C4-4E2D-4390-B454-2D77A96A86CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F922B4C4-4E2D-4390-B454-2D77A96A86CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDE38545-ADAE-4F92-92E1-2BAD38750AF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDE38545-ADAE-4F92-92E1-2BAD38750AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDE38545-ADAE-4F92-92E1-2BAD38750AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDE38545-ADAE-4F92-92E1-2BAD38750AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15C83CC0-D8D8-49DE-953F-E16D1E615EA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15C83CC0-D8D8-49DE-953F-E16D1E615EA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15C83CC0-D8D8-49DE-953F-E16D1E615EA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15C83CC0-D8D8-49DE-953F-E16D1E615EA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

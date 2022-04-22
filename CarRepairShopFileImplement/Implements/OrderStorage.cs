@@ -4,26 +4,24 @@ using CarRepairShopContracts.ViewModels;
 using CarRepairShopFileImplement.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CarRepairShopFileImplement.Implements
 {
     public class OrderStorage : IOrderStorage
     {
-        private readonly FileDataListSingleton source;
+        private readonly FileDataListSingleton _source;
 
         public OrderStorage()
         {
-            source = FileDataListSingleton.GetInstance();
+            _source = FileDataListSingleton.GetInstance();
         }
 
         public List<OrderViewModel> GetFullList()
         {
-            List<OrderViewModel> result = new List<OrderViewModel>();
-            foreach (var order in source.Orders)
-            {
-                result.Add(CreateModel(order));
-            }
-            return result;
+            return _source.Orders
+                .Select(CreateModel)
+                .ToList();
         }
 
         public List<OrderViewModel> GetFilteredList(OrderBindingModel model)
@@ -32,15 +30,13 @@ namespace CarRepairShopFileImplement.Implements
             {
                 return null;
             }
-            List<OrderViewModel> result = new List<OrderViewModel>();
-            foreach (var order in source.Orders)
-            {
-                if (order.ProductId.ToString().Contains(model.ProductId.ToString()))
-                {
-                    result.Add(CreateModel(order));
-                }
-            }
-            return result;
+
+            return _source.Orders
+                .Where(rec => (!model.DateFrom.HasValue && !model.DateTo.HasValue && rec.DateCreate.Date == model.DateCreate.Date) ||
+                (model.DateFrom.HasValue && model.DateTo.HasValue && rec.DateCreate.Date >= model.DateFrom.Value.Date && rec.DateCreate.Date <= model.DateTo.Value.Date) ||
+                (model.ClientId.HasValue && rec.ClientId == model.ClientId))
+                .Select(CreateModel)
+                .ToList();
         }
 
         public OrderViewModel GetElement(OrderBindingModel model)
@@ -49,92 +45,67 @@ namespace CarRepairShopFileImplement.Implements
             {
                 return null;
             }
-            foreach (var component in source.Orders)
-            {
-                if (component.Id == model.Id || component.ProductId ==
-               model.ProductId)
-                {
-                    return CreateModel(component);
-                }
-            }
-            return null;
+
+            Order order = _source.Orders.FirstOrDefault(recOder => recOder.Id == model.Id);
+            return order != null ? CreateModel(order) : null;
         }
 
         public void Insert(OrderBindingModel model)
         {
-            Order tempOrder = new Order { Id = 1 };
-            foreach (var order in source.Orders)
-            {
-                if (order.Id >= tempOrder.Id)
-                {
-                    tempOrder.Id = order.Id + 1;
-                }
-            }
-            source.Orders.Add(CreateModel(model, tempOrder));
+            int maxId = _source.Orders.Count > 0 ? _source.Orders.Max(recOder => recOder.Id) : 0;
+            var order = new Order { Id = maxId + 1 };
+            _source.Orders.Add(CreateModel(model, order));
         }
 
         public void Update(OrderBindingModel model)
         {
-            Order tempOrder = null;
-            foreach (var order in source.Orders)
+            Order order = _source.Orders.FirstOrDefault(recOder => recOder.Id == model.Id);
+            if (order == null)
             {
-                if (order.Id == model.Id)
-                {
-                    tempOrder = order;
-                }
+                throw new Exception("Заказ не найден");
             }
-            if (tempOrder == null)
-            {
-                throw new Exception("Элемент не найден");
-            }
-            CreateModel(model, tempOrder);
+            CreateModel(model, order);
         }
 
         public void Delete(OrderBindingModel model)
         {
-            for (int i = 0; i < source.Orders.Count; ++i)
+            Order order = _source.Orders.FirstOrDefault(recOrder => recOrder.Id == model.Id);
+            if (order != null)
             {
-                if (source.Orders[i].Id == model.Id.Value)
-                {
-                    source.Orders.RemoveAt(i);
-                    return;
-                }
+                _source.Orders.Remove(order);
             }
-            throw new Exception("Элемент не найден");
+            else
+            {
+                throw new Exception("Заказ не найден");
+            }
         }
 
         private Order CreateModel(OrderBindingModel model, Order order)
         {
+            order.ClientId = (int)model.ClientId;
             order.ProductId = model.ProductId;
             order.Count = model.Count;
             order.Sum = model.Sum;
             order.Status = model.Status;
-            order.DateImplement = model.DateImplement;
             order.DateCreate = model.DateCreate;
+            order.DateImplement = model.DateImplement;
             return order;
         }
 
         private OrderViewModel CreateModel(Order order)
         {
-            string packageName = null;
-            foreach (var package in source.repairs)
-            {
-                if (package.Id == order.ProductId)
-                {
-                    packageName = package.repairName;
-                }
-            }
-
             return new OrderViewModel
             {
                 Id = order.Id,
+                ProductName = _source.repairs.FirstOrDefault(repair => repair.Id == order.ProductId)?.repairName,
                 ProductId = order.ProductId,
-                Sum = order.Sum,
                 Count = order.Count,
+                Sum = order.Sum,
                 Status = Enum.GetName(order.Status),
-                ProductName = packageName,
                 DateCreate = order.DateCreate,
-                DateImplement = order.DateImplement
+                DateImplement = order.DateImplement,
+                ClientId = order.ClientId,
+                ClientFIO = _source.Clients.FirstOrDefault(rec => rec.Id == order.ClientId)?.ClientFIO,
             };
         }
     }

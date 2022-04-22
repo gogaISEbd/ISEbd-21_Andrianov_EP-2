@@ -4,7 +4,7 @@ using CarRepairShopContracts.ViewModels;
 using CarRepairShopListImplement.Models;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace CarRepairShopListImplement.Implements
 {
@@ -15,6 +15,44 @@ namespace CarRepairShopListImplement.Implements
         public OrderStorage()
         {
             source = DataListSingleton.GetInstance();
+        }
+
+        private Order CreateModel(OrderBindingModel model, Order order)
+        {
+            order.ProductId = model.ProductId;
+            order.Count = model.Count;
+            order.Sum = model.Sum;
+            order.Status = model.Status;
+            order.DateCreate = model.DateCreate;
+            order.DateImplement = model.DateImplement;
+
+            return order;
+        }
+
+        private OrderViewModel CreateModel(Order order)
+        {
+            string clientFIO = null;
+            foreach (var client in source.Clients)
+            {
+                if (client.Id == order.ClientId)
+                {
+                    clientFIO = client.ClientFIO;
+                    break;
+                }
+            }
+            return new OrderViewModel
+            {
+                Id = order.Id,
+                ProductName = source.repair.FirstOrDefault(repair => repair.Id == order.ProductId)?.ProductName,
+                ProductId = order.ProductId,
+                Count = order.Count,
+                Sum = order.Sum,
+                Status = Enum.GetName(order.Status),
+                DateCreate = order.DateCreate,
+                DateImplement = order.DateImplement,
+                ClientId = order.ClientId,
+                ClientFIO = clientFIO
+            };
         }
 
         public List<OrderViewModel> GetFullList()
@@ -36,8 +74,9 @@ namespace CarRepairShopListImplement.Implements
             List<OrderViewModel> result = new List<OrderViewModel>();
             foreach (var order in source.Orders)
             {
-                if (order.ProductId == model.ProductId||
-                        (model.DateFrom.GetHashCode() != 0 && model.DateTo.GetHashCode() != 0 && order.DateCreate >= model.DateFrom && order.DateCreate <= model.DateTo))
+                if ((!model.DateFrom.HasValue && !model.DateTo.HasValue && order.DateCreate.Date == model.DateCreate.Date) ||
+                    (model.DateFrom.HasValue && model.DateTo.HasValue && order.DateCreate.Date >= model.DateFrom.Value.Date && order.DateCreate.Date <= model.DateTo.Value.Date) ||
+                    (model.ClientId.HasValue && order.ClientId == model.ClientId))
                 {
                     result.Add(CreateModel(order));
                 }
@@ -51,12 +90,11 @@ namespace CarRepairShopListImplement.Implements
             {
                 return null;
             }
-            foreach (var component in source.Orders)
+            foreach (var order in source.Orders)
             {
-                if (component.Id == model.Id || component.ProductId ==
-               model.ProductId)
+                if (order.Id == model.Id)
                 {
-                    return CreateModel(component);
+                    return CreateModel(order);
                 }
             }
             return null;
@@ -64,7 +102,10 @@ namespace CarRepairShopListImplement.Implements
 
         public void Insert(OrderBindingModel model)
         {
-            Order tempOrder = new Order { Id = 1 };
+            Order tempOrder = new Order
+            {
+                Id = 1
+            };
             foreach (var order in source.Orders)
             {
                 if (order.Id >= tempOrder.Id)
@@ -78,6 +119,7 @@ namespace CarRepairShopListImplement.Implements
         public void Update(OrderBindingModel model)
         {
             Order tempOrder = null;
+
             foreach (var order in source.Orders)
             {
                 if (order.Id == model.Id)
@@ -96,48 +138,13 @@ namespace CarRepairShopListImplement.Implements
         {
             for (int i = 0; i < source.Orders.Count; ++i)
             {
-                if (source.Orders[i].Id == model.Id.Value)
+                if (source.Orders[i].Id == model.Id)
                 {
                     source.Orders.RemoveAt(i);
                     return;
                 }
             }
             throw new Exception("Элемент не найден");
-        }
-
-        private Order CreateModel(OrderBindingModel model, Order order)
-        {
-            order.ProductId= model.ProductId;
-            order.Count = model.Count;
-            order.Sum = model.Sum;
-            order.Status = model.Status;
-            order.DateImplement = model.DateImplement;
-            order.DateCreate = model.DateCreate;
-            return order;
-        }
-
-        private OrderViewModel CreateModel(Order order)
-        {
-            string packageName = null;
-            foreach (var package in source.repair)
-            {
-                if (package.Id == order.ProductId)
-                {
-                    packageName = package.ProductName;
-                }
-            }
-
-            return new OrderViewModel
-            {
-                Id = order.Id,
-                ProductId = order.ProductId,
-                Sum = order.Sum,
-                Count = order.Count,
-                Status = Enum.GetName(order.Status),
-                ProductName = packageName,
-                DateCreate = order.DateCreate,
-                DateImplement = order.DateImplement
-            };
         }
     }
 }

@@ -13,14 +13,17 @@ namespace CarRepairShopFileImplement
         private readonly string ComponentFileName = "Component.xml";
         private readonly string OrderFileName = "Order.xml";
         private readonly string repairFileName = "repair.xml";
+        private readonly string ClientFileName = "Client.xml";
         public List<Component> Components { get; set; }
         public List<Order> Orders { get; set; }
         public List<repair> repairs { get; set; }
+        public List<Client> Clients { get; set; }
         private FileDataListSingleton()
         {
             Components = LoadComponents();
             Orders = LoadOrders();
             repairs = Loadrepairs();
+            Clients = LoadClients();
         }
         public static FileDataListSingleton GetInstance()
         {
@@ -83,6 +86,7 @@ namespace CarRepairShopFileImplement
                     list.Add(new Order
                     {
                         Id = Convert.ToInt32(elem.Attribute("Id").Value),
+                        ClientId = Convert.ToInt32(elem.Element("ClientId").Value),
                         ProductId = Convert.ToInt32(elem.Element("ProductId").Value),
                         Count = Convert.ToInt32(elem.Element("Count").Value),
                         Sum = Convert.ToDecimal(elem.Element("Sum").Value),
@@ -121,6 +125,29 @@ namespace CarRepairShopFileImplement
             }
             return list;
         }
+        private List<Client> LoadClients()
+        {
+            var list = new List<Client>();
+
+            if (File.Exists(ClientFileName))
+            {
+                XDocument xDocument = XDocument.Load(ClientFileName);
+                var xElements = xDocument.Root.Elements("Client").ToList();
+
+                foreach (var client in xElements)
+                {
+                    list.Add(new Client
+                    {
+                        Id = Convert.ToInt32(client.Attribute("Id").Value),
+                        ClientFIO = client.Element("ClientFIO").Value,
+                        Email = client.Element("Email").Value,
+                        Password = client.Element("Password").Value,
+                    });
+                }
+            }
+            return list;
+        }
+
         private void SaveComponents()
         {
             if (Components != null)
@@ -145,6 +172,7 @@ namespace CarRepairShopFileImplement
                 {
                     xElement.Add(new XElement("Order",
                     new XAttribute("Id", order.Id),
+                    new XElement("ClientId", order.ClientId),
                     new XElement("ProductId", order.ProductId),
                     new XElement("Count", order.Count),
                     new XElement("Sum", order.Sum),

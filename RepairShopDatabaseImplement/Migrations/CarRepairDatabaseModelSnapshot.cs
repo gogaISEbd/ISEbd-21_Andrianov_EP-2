@@ -19,6 +19,30 @@ namespace CarRepairShopDatabaseImplement.Migrations
                 .HasAnnotation("ProductVersion", "5.0.15")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Client", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ClientFIO")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clients");
+                });
+
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Component", b =>
                 {
                     b.Property<int>("Id")
@@ -42,6 +66,9 @@ namespace CarRepairShopDatabaseImplement.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
@@ -61,6 +88,8 @@ namespace CarRepairShopDatabaseImplement.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
 
                     b.HasIndex("RepairId");
 
@@ -113,11 +142,21 @@ namespace CarRepairShopDatabaseImplement.Migrations
 
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Order", b =>
                 {
-                    b.HasOne("CarRepairShopDatabaseImplement.Models.repair", null)
+                    b.HasOne("CarRepairShopDatabaseImplement.Models.Client", "Client")
+                        .WithMany("Orders")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CarRepairShopDatabaseImplement.Models.repair", "Repair")
                         .WithMany("Order")
                         .HasForeignKey("RepairId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Repair");
                 });
 
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.RepairComponent", b =>
@@ -137,6 +176,11 @@ namespace CarRepairShopDatabaseImplement.Migrations
                     b.Navigation("Component");
 
                     b.Navigation("Repair");
+                });
+
+            modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Client", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Component", b =>
