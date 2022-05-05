@@ -140,5 +140,13 @@ namespace CarRepairShopClientApp.Controllers
             RepairViewModel _repair = APIClient.GetRequest<RepairViewModel>($"api/main/getrepair?repairId={repair}");
             return count * _repair.Price;
         }
+        public IActionResult Mail()
+        {
+            if (Program.Client == null)
+            {
+                return Redirect("~/Home/Enter");
+            }
+            return View(APIClient.GetRequest<List<MessageInfoViewModel>>($"api/client/getmessages?clientId={Program.Client.Id}"));
+        }
     }
 }
