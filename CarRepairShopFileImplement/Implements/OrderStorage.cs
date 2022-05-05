@@ -34,7 +34,9 @@ namespace CarRepairShopFileImplement.Implements
             return _source.Orders
                 .Where(rec => (!model.DateFrom.HasValue && !model.DateTo.HasValue && rec.DateCreate.Date == model.DateCreate.Date) ||
                 (model.DateFrom.HasValue && model.DateTo.HasValue && rec.DateCreate.Date >= model.DateFrom.Value.Date && rec.DateCreate.Date <= model.DateTo.Value.Date) ||
-                (model.ClientId.HasValue && rec.ClientId == model.ClientId))
+                (model.ClientId.HasValue && rec.ClientId == model.ClientId) ||
+                (model.SearchStatus.HasValue && model.SearchStatus.Value == rec.Status) ||
+                (model.ImplementerId.HasValue && rec.ImplementerId == model.ImplementerId && model.Status == rec.Status))
                 .Select(CreateModel)
                 .ToList();
         }
@@ -89,6 +91,7 @@ namespace CarRepairShopFileImplement.Implements
             order.Status = model.Status;
             order.DateCreate = model.DateCreate;
             order.DateImplement = model.DateImplement;
+            order.ImplementerId = model.ImplementerId;
             return order;
         }
 
@@ -106,6 +109,8 @@ namespace CarRepairShopFileImplement.Implements
                 DateImplement = order.DateImplement,
                 ClientId = order.ClientId,
                 ClientFIO = _source.Clients.FirstOrDefault(rec => rec.Id == order.ClientId)?.ClientFIO,
+                ImplementerId = order.ImplementerId,
+                ImplementerFIO = _source.Implementers.FirstOrDefault(x => x.Id == order.ImplementerId)?.ImplementerFIO
             };
         }
     }

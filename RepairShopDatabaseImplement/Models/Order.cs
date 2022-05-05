@@ -12,6 +12,8 @@ namespace CarRepairShopDatabaseImplement.Models
 
         public int RepairId { get; set; }
 
+        public int? ImplementerId { get; set; }
+
         [Required]
         public int Count { get; set; }
 
@@ -27,5 +29,6 @@ namespace CarRepairShopDatabaseImplement.Models
         public DateTime? DateImplement { get; set; }
         public virtual repair Repair{ get; set; }
         public virtual Client Client { get; set; }
+        public virtual Implementer Implementer { get; set; }
     }
 }
