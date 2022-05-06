@@ -17,12 +17,14 @@ namespace CarRepairShopDatabaseImplement.Implements
         {
             using var context = new CarRepairDatabase();
 
-            return context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).Select(rec => new OrderViewModel
+            return context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).Include(rec => rec.Implementer).Select(rec => new OrderViewModel
             {
                 Id = rec.Id,
                 ProductId = rec.RepairId,
                 ClientId = rec.ClientId,
                 ClientFIO = rec.Client.ClientFIO,
+                ImplementerId = rec.ImplementerId,
+                ImplementerFIO = rec.Implementer.ImplementerFIO,
                 ProductName = rec.Repair.RepairName,
                 Count = rec.Count,
                 Sum = rec.Sum,
@@ -42,16 +44,20 @@ namespace CarRepairShopDatabaseImplement.Implements
             using var context = new CarRepairDatabase();
 
             return context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client)
-                .Where(rec => rec.RepairId == model.ProductId ||
-                (model.DateFrom.HasValue && model.DateTo.HasValue &&
-                rec.DateCreate >= model.DateFrom && rec.DateCreate <= model.DateTo) ||
-                model.ClientId.HasValue && rec.ClientId == model.ClientId).Select(rec => new OrderViewModel
-                {
+                .Where(rec => (!model.DateFrom.HasValue && !model.DateTo.HasValue && rec.DateCreate.Date == model.DateCreate.Date) ||
+                    (model.DateFrom.HasValue && model.DateTo.HasValue && rec.DateCreate.Date >= model.DateFrom.Value.Date && rec.DateCreate.Date <= model.DateTo.Value.Date) ||
+                    (model.ClientId.HasValue && rec.ClientId == model.ClientId) ||
+                    (model.SearchStatus.HasValue && model.SearchStatus.Value == rec.Status) ||
+                    (model.ImplementerId.HasValue && rec.ImplementerId == model.ImplementerId && model.Status == rec.Status))
+                    .Select(rec => new OrderViewModel
+                    {
                     Id = rec.Id,
                     ProductId = rec.RepairId,
                     ClientId = rec.ClientId,
                     ClientFIO = rec.Client.ClientFIO,
-                    ProductName = rec.Repair.RepairName,
+                        ImplementerId = rec.ImplementerId,
+                        ImplementerFIO = rec.Implementer.ImplementerFIO,
+                        ProductName = rec.Repair.RepairName,
                     Count = rec.Count,
                     Sum = rec.Sum,
                     Status = rec.Status.ToString(),
@@ -69,7 +75,7 @@ namespace CarRepairShopDatabaseImplement.Implements
 
             using var context = new CarRepairDatabase();
 
-            var order = context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).FirstOrDefault(rec => rec.Id == model.Id);
+            var order = context.Orders.Include(rec => rec.Repair).Include(rec => rec.Client).Include(rec => rec.Implementer).FirstOrDefault(rec => rec.Id == model.Id);
 
             return order != null ? CreateModel(order, context) : null;
         }
@@ -114,6 +120,7 @@ namespace CarRepairShopDatabaseImplement.Implements
         {
             order.RepairId = model.ProductId;
             order.ClientId = model.ClientId.Value;
+            order.ImplementerId = model.ImplementerId;
             order.Count = model.Count;
             order.Sum = model.Sum;
             order.Status = model.Status;
@@ -130,6 +137,7 @@ namespace CarRepairShopDatabaseImplement.Implements
                 ProductId = order.RepairId,
                 ClientId = order.ClientId,
                 ClientFIO = order.Client.ClientFIO,
+                ImplementerId = order.ImplementerId,
                 ProductName = order.Repair.RepairName,
                 Count = order.Count,
                 Sum = order.Sum,

@@ -14,16 +14,19 @@ namespace CarRepairShopFileImplement
         private readonly string OrderFileName = "Order.xml";
         private readonly string repairFileName = "repair.xml";
         private readonly string ClientFileName = "Client.xml";
+        private readonly string ImplementerFileName = "Implementer.xml";
         public List<Component> Components { get; set; }
         public List<Order> Orders { get; set; }
         public List<repair> repairs { get; set; }
         public List<Client> Clients { get; set; }
+        public List<Implementer> Implementers { get; set; }
         private FileDataListSingleton()
         {
             Components = LoadComponents();
             Orders = LoadOrders();
             repairs = Loadrepairs();
             Clients = LoadClients();
+            Implementers = LoadImplementers();
         }
         public static FileDataListSingleton GetInstance()
         {
@@ -88,6 +91,7 @@ namespace CarRepairShopFileImplement
                         Id = Convert.ToInt32(elem.Attribute("Id").Value),
                         ClientId = Convert.ToInt32(elem.Element("ClientId").Value),
                         ProductId = Convert.ToInt32(elem.Element("ProductId").Value),
+                        ImplementerId = Convert.ToInt32(elem.Element("ImplementerId").Value),
                         Count = Convert.ToInt32(elem.Element("Count").Value),
                         Sum = Convert.ToDecimal(elem.Element("Sum").Value),
                         Status = status,
@@ -147,6 +151,28 @@ namespace CarRepairShopFileImplement
             }
             return list;
         }
+        private List<Implementer> LoadImplementers()
+        {
+            var list = new List<Implementer>();
+
+            if (File.Exists(ClientFileName))
+            {
+                XDocument xDocument = XDocument.Load(ClientFileName);
+                var xElements = xDocument.Root.Elements("Implementer").ToList();
+
+                foreach (var elem in xElements)
+                {
+                    list.Add(new Implementer
+                    {
+                        Id = Convert.ToInt32(elem.Attribute("Id").Value),
+                        ImplementerFIO = elem.Element("ImplementerFIO").Value,
+                        WorkingTime = Convert.ToInt32(elem.Element("WorkingTime").Value),
+                        PauseTime = Convert.ToInt32(elem.Element("PauseTime").Value),
+                    });
+                }
+            }
+            return list;
+        }
 
         private void SaveComponents()
         {
@@ -174,6 +200,7 @@ namespace CarRepairShopFileImplement
                     new XAttribute("Id", order.Id),
                     new XElement("ClientId", order.ClientId),
                     new XElement("ProductId", order.ProductId),
+                    new XElement("ImplementerId", order.ImplementerId),
                     new XElement("Count", order.Count),
                     new XElement("Sum", order.Sum),
                     new XElement("Status", order.Status),
@@ -208,12 +235,54 @@ namespace CarRepairShopFileImplement
                 var xDocument = new XDocument(xElement);
                 xDocument.Save(repairFileName);
             }
+
+        }
+        private void SaveClients()
+        {
+            if (Clients != null)
+            {
+                var xElement = new XElement("Clients");
+
+                foreach (var client in Clients)
+                {
+                    xElement.Add(new XElement("Client",
+                    new XAttribute("Id", client.Id),
+                    new XElement("ClientFIO", client.ClientFIO),
+                    new XElement("Email", client.Email),
+                    new XElement("Password", client.Password)));
+                }
+
+                XDocument xDocument = new XDocument(xElement);
+                xDocument.Save(ClientFileName);
+            }
+        }
+
+        private void SaveImplementers()
+        {
+            if (Implementers != null)
+            {
+                var xElement = new XElement("Implementers");
+
+                foreach (var implementer in Implementers)
+                {
+                    xElement.Add(new XElement("Implementer",
+                    new XAttribute("Id", implementer.Id),
+                    new XElement("ImplementerFIO", implementer.ImplementerFIO),
+                    new XElement("WorkingTime", implementer.WorkingTime),
+                    new XElement("PauseTime", implementer.PauseTime)));
+                }
+
+                XDocument xDocument = new XDocument(xElement);
+                xDocument.Save(ImplementerFileName);
+            }
         }
         public void SaveAllData()
         {
             SaveComponents();
             SaveOrders();
             Saverepairs();
+            SaveClients();
+            SaveImplementers();
         }
     }
 }
