@@ -13,14 +13,17 @@ namespace CarRepairShopFileImplement
         private readonly string ComponentFileName = "Component.xml";
         private readonly string OrderFileName = "Order.xml";
         private readonly string repairFileName = "repair.xml";
+        private readonly string WareHouseFileName = "WareHouse.xml";
         public List<Component> Components { get; set; }
         public List<Order> Orders { get; set; }
         public List<repair> repairs { get; set; }
+        public List<WareHouse> WareHouses { get; set; }
         private FileDataListSingleton()
         {
             Components = LoadComponents();
             Orders = LoadOrders();
             repairs = Loadrepairs();
+            WareHouses = LoadWareHouses();
         }
         public static FileDataListSingleton GetInstance()
         {
@@ -121,6 +124,39 @@ namespace CarRepairShopFileImplement
             }
             return list;
         }
+        private List<WareHouse> LoadWareHouses()
+        {
+            var list = new List<WareHouse>();
+
+            if (File.Exists(WareHouseFileName))
+            {
+                XDocument xDocument = XDocument.Load(WareHouseFileName);
+                var xElements = xDocument.Root.Elements("WareHouse").ToList();
+
+                foreach (var elem in xElements)
+                {
+                    var wareHouseComponents = new Dictionary<int, int>();
+                    foreach (var component in elem.Element("WareHouseComponents").Elements("WareHouseComponent").ToList())
+                    {
+                        wareHouseComponents.Add(Convert.ToInt32(component.Element("Key").Value), Convert.ToInt32(component.Element("Value").Value));
+                    }
+
+                    list.Add(new WareHouse
+                    {
+                        Id = Convert.ToInt32(elem.Attribute("Id").Value),
+                        WareHouseName = elem.Element("WareHouseName").Value,
+                        ResponsiblePersonFIO = elem.Element("ResponsiblePersonFIO").Value,
+                        WareHouseComponents = wareHouseComponents
+                    });
+
+                    if (elem.Element("DateCreate").Value != "")
+                    {
+                        list.Last().DateCreate = DateTime.ParseExact(elem.Element("DateCreate").Value, "d.M.yyyy H:m:s", null);
+                    }
+                }
+            }
+            return list;
+        }
         private void SaveComponents()
         {
             if (Components != null)
@@ -180,12 +216,47 @@ namespace CarRepairShopFileImplement
                 var xDocument = new XDocument(xElement);
                 xDocument.Save(repairFileName);
             }
+
         }
-        public void SaveAllData()
+        private void SaveWareHouses()
+        {
+            if (WareHouses != null)
+            {
+                var xElement = new XElement("WareHouses");
+
+                foreach (var wareHouse in WareHouses)
+                {
+                    var components = new XElement("WareHouseComponents");
+
+                    foreach (var component in wareHouse.WareHouseComponents)
+                    {
+                        components.Add(new XElement(
+                            "WareHouseComponent",
+                            new XElement("Key", component.Key),
+                            new XElement("Value", component.Value)
+                        ));
+                    }
+
+                    xElement.Add(new XElement(
+                        "WareHouse",
+                        new XAttribute("Id", wareHouse.Id),
+                        new XElement("WareHouseName", wareHouse.WareHouseName),
+                        new XElement("ResponsiblePersonFIO", wareHouse.ResponsiblePersonFIO),
+                        new XElement("DateCreate", wareHouse.DateCreate.ToString()),
+                        components
+                    ));
+                }
+
+                XDocument xDocument = new XDocument(xElement);
+                xDocument.Save(WareHouseFileName);
+            }
+        }
+            public void SaveAllData()
         {
             SaveComponents();
             SaveOrders();
             Saverepairs();
+            SaveWareHouses();
         }
     }
 }

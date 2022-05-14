@@ -9,7 +9,6 @@ using Unity;
 using Unity.Lifetime;
 
 
-
 namespace CarRepairShopView
 {
     static class Program
@@ -47,6 +46,8 @@ namespace CarRepairShopView
             ComponentStorage>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<IOrderStorage, OrderStorage>(new
             HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IWareHouseStorage, WareHouseStorage>(new
+            HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairStorage, RepairStorage>(new
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IComponentLogic, ComponentLogic>(new
@@ -54,6 +55,8 @@ namespace CarRepairShopView
             currentContainer.RegisterType<IOrderLogic, OrderLogic>(new
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairLogic, RepairLogic>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IWareHouseLogic, WareHouseLogic>(new
             HierarchicalLifetimeManager());
             return currentContainer;
         }
