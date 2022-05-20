@@ -2,7 +2,7 @@
 using CarRepairShopContracts.BusinessLogicsContacts;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-;
+
 
 namespace CarRepairShopBusinessLogic.MailWorker
 {
