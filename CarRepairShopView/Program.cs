@@ -1,6 +1,7 @@
 using CarRepairShopBusinessLogic.BusinessLogics;
 using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.StoragesContracts;
+using CarRepairShopListImplement;
 using CarRepairShopListImplement.Implements;
 using System;
 using System.Windows.Forms;
@@ -45,6 +46,8 @@ namespace CarRepairShopView
             ComponentStorage>(new HierarchicalLifetimeManager());
             currentContainer.RegisterType<IOrderStorage, OrderStorage>(new
             HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IWareHouseStorage, WareHouseStorage>(new
+            HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairStorage, RepairStorage>(new
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IComponentLogic, ComponentLogic>(new
@@ -52,6 +55,8 @@ namespace CarRepairShopView
             currentContainer.RegisterType<IOrderLogic, OrderLogic>(new
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairLogic, RepairLogic>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IWareHouseLogic, WareHouseLogic>(new
             HierarchicalLifetimeManager());
             return currentContainer;
         }
