@@ -162,11 +162,13 @@ namespace CarRepairShopListImplement.Implements
                 DateCreate = wareHouse.DateCreate,
                 WareHousecomponents = wareHouseComponents
             };
+
             
         }
         public bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount)
         {
             throw new NotImplementedException();
+
         }
     }
 }

@@ -21,6 +21,8 @@ namespace CarRepairShopContracts.StoragesContracts
         void Update(WareHouseBindingModel model);
 
         void Delete(WareHouseBindingModel model);
+
         bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount);
+
     }
 }
