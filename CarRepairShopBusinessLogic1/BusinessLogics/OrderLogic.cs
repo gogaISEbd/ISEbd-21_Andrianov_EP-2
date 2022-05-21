@@ -11,10 +11,14 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
     public class OrderLogic : IOrderLogic
     {
         private readonly IOrderStorage _orderStorage;
+        private readonly IWareHouseStorage _wareHouseStorage;
+        private readonly IRepairStorage _repairStorage;
 
-        public OrderLogic(IOrderStorage orderStorage)
+        public OrderLogic(IOrderStorage orderStorage, IWareHouseStorage wareHouseStorage, IRepairStorage repairStorage)
         {
             _orderStorage = orderStorage;
+            _wareHouseStorage = wareHouseStorage;
+            _repairStorage = repairStorage;
         }
 
         public List<OrderViewModel> Read(OrderBindingModel model)
@@ -55,6 +59,15 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             if (order.Status != OrderStatus.Принят)
             {
                 throw new Exception("Заказ не в статусе \"Принят\"");
+            }
+            if (!_wareHouseStorage.WriteOffComponents(
+                _repairStorage.GetElement(
+                    new RepairBindingModel { Id = order.ProductId }
+                ).RepairComponents,
+                order.Count
+            ))
+            {
+                throw new Exception("Не хватает компонентов");
             }
             _orderStorage.Update(new OrderBindingModel
             {
