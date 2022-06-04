@@ -42,7 +42,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
             {
                 WareHouseName = model.WareHouseName
             });
-            if (element != null && element.WareHouseName != model.WareHouseName)
+            if (element != null && element.WareHouseName == model.WareHouseName)
             {
                 throw new Exception("Уже есть склад с таким названием");
             }

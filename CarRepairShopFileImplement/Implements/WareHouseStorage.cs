@@ -100,15 +100,15 @@ namespace CarRepairShopFileImplement.Implements
                     wareHouse.WareHouseComponents.Remove(key);
                 }
             }
-            foreach (var component in model.WareHouseComponents)
+            foreach (var ingredient in model.WareHouseComponents)
             {
-                if (wareHouse.WareHouseComponents.ContainsKey(component.Key))
+                if (wareHouse.WareHouseComponents.ContainsKey(ingredient.Key))
                 {
-                    wareHouse.WareHouseComponents[component.Key] = model.WareHouseComponents[component.Key].Item2;
+                    wareHouse.WareHouseComponents[ingredient.Key] = model.WareHouseComponents[ingredient.Key].Item2;
                 }
                 else
                 {
-                    wareHouse.WareHouseComponents.Add(component.Key, model.WareHouseComponents[component.Key].Item2);
+                    wareHouse.WareHouseComponents.Add(ingredient.Key, model.WareHouseComponents[ingredient.Key].Item2);
                 }
             }
             return wareHouse;
@@ -143,35 +143,35 @@ namespace CarRepairShopFileImplement.Implements
 
         public bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount)
         {
-            foreach (var repairCompanent in repairComponents)
+            foreach (var repaircomponent in repairComponents)
             {
-                int wareHouseComponentCount = _source.WareHouses
-                    .Where(wareHouse => wareHouse.WareHouseComponents.ContainsKey(repairCompanent.Key))
-                    .Sum(wareHouse => wareHouse.WareHouseComponents[repairCompanent.Key]);
+                int wareHouseComponentsCount = _source.WareHouses
+                    .Where(wareHouse => wareHouse.WareHouseComponents.ContainsKey(repaircomponent.Key))
+                    .Sum(wareHouse => wareHouse.WareHouseComponents[repaircomponent.Key]);
 
-                if (wareHouseComponentCount < (repairCompanent.Value.Item2 * repairCount))
+                if (wareHouseComponentsCount < (repaircomponent.Value.Item2 * repairCount))
                 {
                     return false;
                 }
             }
 
-            foreach (var repairComponent in repairComponents)
+            foreach (var repaircomponent in repairComponents)
             {
-                int repairComponentCount = repairComponent.Value.Item2 * repairCount;
+                int repairComponentCount = repaircomponent.Value.Item2 * repairCount;
 
-                var wareHousesWithRepairComponents = _source.WareHouses
-                    .Where(wareHouse => wareHouse.WareHouseComponents.ContainsKey(repairComponent.Key));
+                var wareHousesWithRepairComponent = _source.WareHouses
+                    .Where(wareHouse => wareHouse.WareHouseComponents.ContainsKey(repaircomponent.Key));
 
-                foreach (var wareHouse in wareHousesWithRepairComponents)
+                foreach (var wareHouse in wareHousesWithRepairComponent)
                 {
-                    if (wareHouse.WareHouseComponents[repairComponent.Key] <= repairComponentCount)
+                    if (wareHouse.WareHouseComponents[repaircomponent.Key] <= repairComponentCount)
                     {
-                        repairComponentCount -= wareHouse.WareHouseComponents[repairComponent.Key];
-                        wareHouse.WareHouseComponents.Remove(repairComponent.Key);
+                        repairComponentCount -= wareHouse.WareHouseComponents[repaircomponent.Key];
+                        wareHouse.WareHouseComponents.Remove(repaircomponent.Key);
                     }
                     else
                     {
-                        wareHouse.WareHouseComponents[repairComponent.Key] -= repairComponentCount;
+                        wareHouse.WareHouseComponents[repaircomponent.Key] -= repairComponentCount;
                         repairComponentCount = 0;
                     }
 

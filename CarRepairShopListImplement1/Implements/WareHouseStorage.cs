@@ -143,16 +143,16 @@ namespace CarRepairShopListImplement.Implements
 
             foreach (var whi in wareHouse.WareHouseComponents)
             {
-                string componentName = string.Empty;
+                string componenttName = string.Empty;
                 foreach (var component in source.Components)
                 {
                     if (whi.Key == component.Id)
                     {
-                        componentName = component.ComponentName;
+                        componenttName = component.ComponentName;
                         break;
                     }
                 }
-                wareHouseComponents.Add(whi.Key, (componentName, whi.Value));
+                wareHouseComponents.Add(whi.Key, (componenttName, whi.Value));
             }
             return new WareHouseViewModel
             {
@@ -162,9 +162,9 @@ namespace CarRepairShopListImplement.Implements
                 DateCreate = wareHouse.DateCreate,
                 WareHousecomponents = wareHouseComponents
             };
-            
         }
-        public bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount)
+
+        public bool WriteOffComponents(Dictionary<int, (string, int)> pizzaIngredients, int pizzaCount)
         {
             throw new NotImplementedException();
         }
