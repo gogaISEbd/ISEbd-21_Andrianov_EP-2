@@ -64,7 +64,7 @@ namespace CarRepairShopBusinessLogic.BusinessLogics
                 order.Count
             ))
             {
-                throw new Exception("Не хватает ингредиентов");
+                throw new Exception("Не хватает компонентов");
             }
             _orderStorage.Update(new OrderBindingModel
             {
