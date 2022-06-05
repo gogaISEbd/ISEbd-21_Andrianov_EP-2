@@ -1,4 +1,6 @@
 using CarRepairShopBusinessLogic.BusinessLogics;
+using CarRepairShopBusinessLogic.OfficePackage;
+using CarRepairShopBusinessLogic.OfficePackage.Implements;
 using CarRepairShopContracts.BusinessLogicsContacts;
 using CarRepairShopContracts.StoragesContracts;
 using System;
@@ -54,7 +56,15 @@ namespace CarRepairShopView
             HierarchicalLifetimeManager());
             currentContainer.RegisterType<IRepairLogic, RepairLogic>(new
             HierarchicalLifetimeManager());
+            currentContainer.RegisterType<IReportLogic, ReportLogic>(new
+            HierarchicalLifetimeManager());
             currentContainer.RegisterType<IWareHouseLogic, WareHouseLogic>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToExcel, SaveToExcel>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToWord, SaveToWord>(new
+            HierarchicalLifetimeManager());
+            currentContainer.RegisterType<AbstractSaveToPdf, SaveToPdf>(new
             HierarchicalLifetimeManager());
             return currentContainer;
         }
