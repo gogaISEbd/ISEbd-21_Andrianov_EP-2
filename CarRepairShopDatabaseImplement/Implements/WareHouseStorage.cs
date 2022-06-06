@@ -201,54 +201,49 @@ namespace CarRepairShopDatabaseImplement.Implements
 
         public bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount)
         {
-            using (var context = new CarRepairDatabase())
+            using var context = new CarRepairDatabase();
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                using (var transaction = context.Database.BeginTransaction())
+                foreach (var cond in repairComponents)
                 {
-                    try
+                    int count = cond.Value.Item2 * repairCount;
+                    var repaircom = context.RepairComponent.Where(rec => rec.ComponentId == cond.Key);
+
+                    foreach (var comp in repaircom)
                     {
-                        foreach (var pi in repairComponents)
+                        if (comp.Count <= count)
                         {
-                            int repairComponentsCount = pi.Value.Item2 * repairCount;
-                            var wareHouseComponents = context.WareHouseComponents.Where(wareHouseComponents => wareHouseComponents.ComponentId == pi.Key).ToList();
-
-                            if (wareHouseComponents.Sum(wareHouseComponents => wareHouseComponents.Count) < repairComponentsCount)
-                            {
-                                throw new Exception("Недостаточно ингредиентов");
-                            }
-
-                            foreach (var whi in wareHouseComponents)
-                            {
-                                if (whi.Count <= repairComponentsCount)
-                                {
-                                    repairComponentsCount -= whi.Count;
-                                    context.WareHouseComponents.Remove(whi);
-                                    context.SaveChanges();
-                                }
-                                else
-                                {
-                                    whi.Count -= repairComponentsCount;
-                                    context.SaveChanges();
-                                    repairComponentsCount = 0;
-                                }
-
-                                if (repairComponentsCount == 0)
-                                {
-                                    break;
-                                }
-                            }
+                            count -= comp.Count;
+                            context.RepairComponent.Remove(comp);
+                        }
+                        else
+                        {
+                            comp.Count -= count;
+                            count = 0;
                         }
 
-                        transaction.Commit();
-                        return true;
+                        if (count == 0)
+                        {
+                            break;
+                        }
                     }
-                    catch
+                    if (count != 0)
                     {
-                        transaction.Rollback();
-                        throw;
+                        throw new Exception("Недостаточно компонентов");
                     }
                 }
+
+                context.SaveChanges();
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
             }
         }
-    }
-}
+            }
+        }
+ 
