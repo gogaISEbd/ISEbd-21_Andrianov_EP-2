@@ -1,4 +1,4 @@
-﻿namespace CarRepairShopView
+namespace CarRepairShopView
 {
     partial class FormMain
     {

@@ -1,30 +1,35 @@
-﻿using CarRepairShopContracts.BindingModels;
+using Microsoft.EntityFrameworkCore;
+using CarRepairShopDatabaseImplement.Models;
+using CarRepairShopContracts.BindingModels;
 using CarRepairShopContracts.StoragesContracts;
 using CarRepairShopContracts.ViewModels;
-using CarRepairShopListImplement.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CarRepairShopListImplement.Implements
+namespace CarRepairShopDatabaseImplement.Implements
 {
     public class WareHouseStorage : IWareHouseStorage
     {
-        private readonly DataListSingleton source;
-
-        public WareHouseStorage()
-        {
-            source = DataListSingleton.GetInstance();
-        }
-
         public List<WareHouseViewModel> GetFullList()
         {
-            List<WareHouseViewModel> result = new List<WareHouseViewModel>();
-            foreach (var wareHouse in source.Warehouses)
+            using (var context = new CarRepairDatabase())
             {
-                result.Add(CreateModel(wareHouse));
+                return context.WareHouses
+                    .Include(rec => rec.WareHouseComponents)
+                    .ThenInclude(rec => rec.Component)
+                    .ToList()
+                    .Select(rec => new WareHouseViewModel
+                    {
+                        Id = rec.Id,
+                        WareHouseName = rec.WareHouseName,
+                        ResponsiblePersonFIO = rec.ResponsiblePersonFIO,
+                        DateCreate = rec.DateCreate,
+                        WareHousecomponents = rec.WareHouseComponents
+                    .ToDictionary(recSC => recSC.ComponentId, recSC => (recSC.Component?.ComponentName, recSC.Count))
+                    })
+                    .ToList();
             }
-            return result;
         }
 
         public List<WareHouseViewModel> GetFilteredList(WareHouseBindingModel model)
@@ -33,15 +38,25 @@ namespace CarRepairShopListImplement.Implements
             {
                 return null;
             }
-            List<WareHouseViewModel> result = new List<WareHouseViewModel>();
-            foreach (var wareHouse in source.Warehouses)
+
+            using (var context = new CarRepairDatabase())
             {
-                if (wareHouse.WareHouseName.Contains(model.WareHouseName))
-                {
-                    result.Add(CreateModel(wareHouse));
-                }
+                return context.WareHouses
+                    .Include(rec => rec.WareHouseComponents)
+                    .ThenInclude(rec => rec.Component)
+                    .Where(rec => rec.WareHouseName.Contains(model.WareHouseName))
+                    .ToList()
+                    .Select(rec => new WareHouseViewModel
+                    {
+                        Id = rec.Id,
+                        WareHouseName = rec.WareHouseName,
+                        ResponsiblePersonFIO = rec.ResponsiblePersonFIO,
+                        DateCreate = rec.DateCreate,
+                        WareHousecomponents = rec.WareHouseComponents
+                    .ToDictionary(recWHI => recWHI.ComponentId, recWHI => (recWHI.Component?.ComponentName, recWHI.Count))
+                    })
+                    .ToList();
             }
-            return result;
         }
 
         public WareHouseViewModel GetElement(WareHouseBindingModel model)
@@ -50,123 +65,185 @@ namespace CarRepairShopListImplement.Implements
             {
                 return null;
             }
-            foreach (var wareHouse in source.Warehouses)
+
+            using (var context = new CarRepairDatabase())
             {
-                if (wareHouse.Id == model.Id || wareHouse.WareHouseName ==
-                model.WareHouseName)
+                var wareHouse = context.WareHouses
+                    .Include(rec => rec.WareHouseComponents)
+                    .ThenInclude(rec => rec.Component)
+                    .FirstOrDefault(rec => rec.WareHouseName == model.WareHouseName || rec.Id == model.Id);
+                return wareHouse != null ?
+                new WareHouseViewModel
                 {
-                    return CreateModel(wareHouse);
-                }
+                    Id = wareHouse.Id,
+                    WareHouseName = wareHouse.WareHouseName,
+                    ResponsiblePersonFIO = wareHouse.ResponsiblePersonFIO,
+                    DateCreate = wareHouse.DateCreate,
+                    WareHousecomponents = wareHouse.WareHouseComponents
+                    .ToDictionary(rec => rec.ComponentId, rec => (rec.Component?.ComponentName, rec.Count))
+                } :
+                null;
             }
-            return null;
         }
 
         public void Insert(WareHouseBindingModel model)
         {
-            var tempWareHouse = new WareHouse
+            using (var context = new CarRepairDatabase())
             {
-                Id = 1,
-                WareHouseComponents = new Dictionary<int, int>(),
-                DateCreate = model.DateCreate
-            };
-            foreach (var wareHouse in source.Warehouses)
-            {
-                if (wareHouse.Id >= tempWareHouse.Id)
+                using (var transaction = context.Database.BeginTransaction())
                 {
-                    tempWareHouse.Id = wareHouse.Id + 1;
+                    try
+                    {
+                        var wareHouse = new WareHouse
+                        {
+                            WareHouseName = model.WareHouseName,
+                            ResponsiblePersonFIO = model.ResponsiblePersonFIO,
+                            DateCreate = model.DateCreate
+                        };
+                        context.WareHouses.Add(wareHouse);
+                        context.SaveChanges();
+
+                        CreateModel(model, wareHouse, context);
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
-            source.Warehouses.Add(CreateModel(model, tempWareHouse));
         }
 
         public void Update(WareHouseBindingModel model)
         {
-            WareHouse tempWareHouse = null;
-            foreach (var wareHouse in source.Warehouses)
+            using (var context = new CarRepairDatabase())
             {
-                if (wareHouse.Id == model.Id)
+                using (var transaction = context.Database.BeginTransaction())
                 {
-                    tempWareHouse = wareHouse;
+                    try
+                    {
+                        WareHouse wareHouse = context.WareHouses.FirstOrDefault(rec => rec.Id == model.Id);
+                        if (wareHouse == null)
+                        {
+                            throw new Exception("Элемент не найден");
+                        }
+                        wareHouse.WareHouseName = model.WareHouseName;
+                        wareHouse.ResponsiblePersonFIO = model.ResponsiblePersonFIO;
+
+                        CreateModel(model, wareHouse, context);
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
-            if (tempWareHouse == null)
-            {
-                throw new Exception("Элемент не найден");
-            }
-            CreateModel(model, tempWareHouse);
         }
 
         public void Delete(WareHouseBindingModel model)
         {
-            for (int i = 0; i < source.Warehouses.Count; ++i)
+            using (var context = new CarRepairDatabase())
             {
-                if (source.Warehouses[i].Id == model.Id)
+                WareHouse wareHouse = context.WareHouses.FirstOrDefault(rec => rec.Id == model.Id);
+                if (wareHouse != null)
                 {
-                    source.Warehouses.RemoveAt(i);
-                    return;
-                }
-            }
-            throw new Exception("Элемент не найден");
-        }
-
-        private WareHouse CreateModel(WareHouseBindingModel model, WareHouse wareHouse)
-        {
-            wareHouse.WareHouseName = model.WareHouseName;
-            wareHouse.ResponsiblePersonFIO = model.ResponsiblePersonFIO;
-            wareHouse.DateCreate = model.DateCreate;
-            foreach (var key in wareHouse.WareHouseComponents.Keys.ToList())
-            {
-                if (!model.WareHouseComponents.ContainsKey(key))
-                {
-                    wareHouse.WareHouseComponents.Remove(key);
-                }
-            }
-            foreach (var component in model.WareHouseComponents)
-            {
-                if (wareHouse.WareHouseComponents.ContainsKey(component.Key))
-                {
-                    wareHouse.WareHouseComponents[component.Key] =
-                    model.WareHouseComponents[component.Key].Item2;
+                    context.WareHouses.Remove(wareHouse);
+                    context.SaveChanges();
                 }
                 else
                 {
-                    wareHouse.WareHouseComponents.Add(component.Key,
-                    model.WareHouseComponents[component.Key].Item2);
+                    throw new Exception("Элемент не найден");
+                }
+            }
+        }
+
+        private WareHouse CreateModel(WareHouseBindingModel model, WareHouse wareHouse, CarRepairDatabase context)
+        {
+            if (model.Id.HasValue)
+            {
+                var wareHouseComponents = context.WareHouseComponents.Where(rec => rec.WareHouseId == model.Id.Value).ToList();
+                // удалили те, которых нет в модели
+                context.WareHouseComponents.RemoveRange(wareHouseComponents.Where(rec => !model.WareHouseComponents.ContainsKey(rec.ComponentId)).ToList());
+                context.SaveChanges();
+                // обновили количество у существующих записей
+                foreach (var updateComponent in wareHouseComponents)
+                {
+                    updateComponent.Count = model.WareHouseComponents[updateComponent.ComponentId].Item2;
+                    model.WareHouseComponents.Remove(updateComponent.ComponentId);
+                }
+                context.SaveChanges();
+            }
+            // добавили новые
+            foreach (var whi in model.WareHouseComponents)
+            {
+                context.WareHouseComponents.Add(new WareHouseComponents
+                {
+                    WareHouseId = wareHouse.Id,
+                    ComponentId = whi.Key,
+                    Count = whi.Value.Item2
+                });
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch (DbUpdateException)
+                {
+                    throw new Exception("Возникла ошибка при сохранении");
                 }
             }
             return wareHouse;
         }
 
-        private WareHouseViewModel CreateModel(WareHouse wareHouse)
+        public bool WriteOffComponents(Dictionary<int, (string, int)> repairComponents, int repairCount)
         {
-            var wareHouseComponents = new Dictionary<int, (string, int)>();
-
-            foreach (var whi in wareHouse.WareHouseComponents)
+            using var context = new CarRepairDatabase();
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                string componenttName = string.Empty;
-                foreach (var component in source.Components)
+                foreach (var cond in repairComponents)
                 {
-                    if (whi.Key == component.Id)
+                    int count = cond.Value.Item2 * repairCount;
+                    var repaircom = context.RepairComponent.Where(rec => rec.ComponentId == cond.Key);
+
+                    foreach (var comp in repaircom)
                     {
-                        componenttName = component.ComponentName;
-                        break;
+                        if (comp.Count <= count)
+                        {
+                            count -= comp.Count;
+                            context.RepairComponent.Remove(comp);
+                        }
+                        else
+                        {
+                            comp.Count -= count;
+                            count = 0;
+                        }
+
+                        if (count == 0)
+                        {
+                            break;
+                        }
+                    }
+                    if (count != 0)
+                    {
+                        throw new Exception("Недостаточно компонентов");
                     }
                 }
-                wareHouseComponents.Add(whi.Key, (componenttName, whi.Value));
-            }
-            return new WareHouseViewModel
-            {
-                Id = wareHouse.Id,
-                WareHouseName = wareHouse.WareHouseName,
-                ResponsiblePersonFIO = wareHouse.ResponsiblePersonFIO,
-                DateCreate = wareHouse.DateCreate,
-                WareHousecomponents = wareHouseComponents
-            };
-        }
 
-        public bool WriteOffComponents(Dictionary<int, (string, int)> pizzaIngredients, int pizzaCount)
-        {
-            throw new NotImplementedException();
+                context.SaveChanges();
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
-    }
-}
+            }
+        }
+ 
