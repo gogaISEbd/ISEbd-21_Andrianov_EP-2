@@ -5,12 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.16.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.17" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.17" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.ReportViewer.Runtime.Common" Version="12.0.2402.15" />
+    <PackageReference Include="PdfSharp.MigraDoc.Standard" Version="1.51.15" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,28 +6,31 @@ using CarRepairShopDatabaseImplement.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace CarRepairShopDatabaseImplement.Implements
 {
-   public class OrderStorage : IOrderStorage
+    public class OrderStorage : IOrderStorage
     {
         public List<OrderViewModel> GetFullList()
         {
             using (var context = new CarRepairDatabase())
             {
-                return context.Orders.Select(rec => new OrderViewModel
-                {
-                    Id = rec.Id,
-                    ProductName = context.Repair.FirstOrDefault(r => r.Id == rec.RepairId).RepairName,
-                    ProductId = rec.RepairId,
-                    Count = rec.Count,
-                    Sum = rec.Sum,
-                    Status = rec.Status,
-                    DateCreate = rec.DateCreate,
-                    DateImplement = rec.DateImplement
-                })
-                .ToList();
+                return context.Orders
+                    .Include(rec => rec.Repair)
+                    .Select(rec => new OrderViewModel
+                    {
+                        Id = rec.Id,
+                        ProductId = rec.RepairId,
+                        ProductName = rec.Repair.RepairName,
+                        Count = rec.Count,
+                        Sum = rec.Sum,
+                        Status = rec.Status,
+                        DateCreate = rec.DateCreate,
+                        DateImplement = rec.DateImplement,
+                    })
+                    .ToList();
             }
         }
 
@@ -37,22 +40,25 @@ namespace CarRepairShopDatabaseImplement.Implements
             {
                 return null;
             }
+
             using (var context = new CarRepairDatabase())
             {
                 return context.Orders
-                .Where(rec => rec.Id.Equals(model.Id))
-                .Select(rec => new OrderViewModel
-                {
-                    Id = rec.Id,
-                    ProductName = context.Repair.FirstOrDefault(r => r.Id == rec.RepairId).RepairName,
-                    ProductId = rec.RepairId,
-                    Count = rec.Count,
-                    Sum = rec.Sum,
-                    Status = rec.Status,
-                    DateCreate = rec.DateCreate,
-                    DateImplement = rec.DateImplement
-                })
-                .ToList();
+                    .Include(rec => rec.Repair)
+                    .Where(rec => rec.RepairId == model.ProductId ||
+                        (model.DateFrom.GetHashCode() != 0 && model.DateTo.GetHashCode() != 0 && rec.DateCreate >= model.DateFrom && rec.DateCreate <= model.DateTo))
+                    .Select(rec => new OrderViewModel
+                    {
+                        Id = rec.Id,
+                        ProductId = rec.RepairId,
+                        ProductName = rec.Repair.RepairName,
+                        Count = rec.Count,
+                        Sum = rec.Sum,
+                        Status = rec.Status,
+                        DateCreate = rec.DateCreate,
+                        DateImplement = rec.DateImplement,
+                    })
+                    .ToList();
             }
         }
 
@@ -62,21 +68,21 @@ namespace CarRepairShopDatabaseImplement.Implements
             {
                 return null;
             }
+
             using (var context = new CarRepairDatabase())
             {
-                var order = context.Orders
-                .FirstOrDefault(rec => rec.Id == model.Id);
+                Order order = context.Orders.Include(rec => rec.Repair).FirstOrDefault(rec => rec.Id == model.Id);
                 return order != null ?
                 new OrderViewModel
                 {
                     Id = order.Id,
-                    ProductName = context.Repair.FirstOrDefault(r => r.Id == order.RepairId).RepairName,
                     ProductId = order.RepairId,
+                    ProductName = order.Repair.RepairName,
                     Count = order.Count,
                     Sum = order.Sum,
                     Status = order.Status,
                     DateCreate = order.DateCreate,
-                    DateImplement = order.DateImplement
+                    DateImplement = order.DateImplement,
                 } :
                 null;
             }
@@ -86,7 +92,18 @@ namespace CarRepairShopDatabaseImplement.Implements
         {
             using (var context = new CarRepairDatabase())
             {
-                context.Orders.Add(CreateModel(model, new Order()));
+                var order = new Order
+                {
+                    RepairId = model.ProductId,
+                    Count = model.Count,
+                    Sum = model.Sum,
+                    Status = model.Status,
+                    DateCreate = model.DateCreate,
+                    DateImplement = model.DateImplement,
+                };
+                context.Orders.Add(order);
+                context.SaveChanges();
+                CreateModel(model, order);
                 context.SaveChanges();
             }
         }
@@ -95,13 +112,19 @@ namespace CarRepairShopDatabaseImplement.Implements
         {
             using (var context = new CarRepairDatabase())
             {
-                var element = context.Orders.FirstOrDefault(rec => rec.Id ==
-                model.Id);
-                if (element == null)
+                Order order = context.Orders.FirstOrDefault(rec => rec.Id == model.Id);
+                if (order == null)
                 {
                     throw new Exception("Элемент не найден");
                 }
-                CreateModel(model, element);
+                order.RepairId = model.ProductId;
+                order.Count = model.Count;
+                order.Sum = model.Sum;
+                order.Status = model.Status;
+                order.DateCreate = model.DateCreate;
+                order.DateImplement = model.DateImplement;
+
+                CreateModel(model, order);
                 context.SaveChanges();
             }
         }
@@ -110,11 +133,10 @@ namespace CarRepairShopDatabaseImplement.Implements
         {
             using (var context = new CarRepairDatabase())
             {
-                Order element = context.Orders.FirstOrDefault(rec => rec.Id ==
-                model.Id);
-                if (element != null)
+                Order order = context.Orders.FirstOrDefault(rec => rec.Id == model.Id);
+                if (order != null)
                 {
-                    context.Orders.Remove(element);
+                    context.Orders.Remove(order);
                     context.SaveChanges();
                 }
                 else
@@ -126,12 +148,30 @@ namespace CarRepairShopDatabaseImplement.Implements
 
         private Order CreateModel(OrderBindingModel model, Order order)
         {
-            order.RepairId = model.ProductId;
-            order.Count = model.Count;
-            order.Sum = model.Sum;
-            order.Status = model.Status;
-            order.DateCreate = model.DateCreate;
-            order.DateImplement = model.DateImplement;
+            if (model == null)
+            {
+                return null;
+            }
+
+            using (var context = new CarRepairDatabase())
+            {
+                repair repair = context.Repair.FirstOrDefault(rec => rec.Id == model.ProductId);
+                if (repair != null)
+                {
+                    if (repair.Order == null)
+                    {
+                        repair.Order = new List<Order>();
+                    }
+
+                    repair.Order.Add(order);
+                    context.Repair.Update(repair);
+                    context.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("Элемент не найден");
+                }
+            }
             return order;
         }
     }

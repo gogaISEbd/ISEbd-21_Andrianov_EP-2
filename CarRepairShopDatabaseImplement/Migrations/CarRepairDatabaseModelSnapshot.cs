@@ -161,11 +161,13 @@ namespace CarRepairShopDatabaseImplement.Migrations
 
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.Order", b =>
                 {
-                    b.HasOne("CarRepairShopDatabaseImplement.Models.repair", null)
+                    b.HasOne("CarRepairShopDatabaseImplement.Models.repair", "Repair")
                         .WithMany("Order")
                         .HasForeignKey("RepairId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Repair");
                 });
 
             modelBuilder.Entity("CarRepairShopDatabaseImplement.Models.RepairComponent", b =>

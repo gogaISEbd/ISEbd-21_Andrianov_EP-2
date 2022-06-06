@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using CarRepairShopDatabaseImplement.Models;
 using CarRepairShopContracts.BindingModels;
 using CarRepairShopContracts.StoragesContracts;
@@ -244,6 +244,6 @@ namespace CarRepairShopDatabaseImplement.Implements
                 throw;
             }
         }
-            }
-        }
- 
+    }
+    
+}

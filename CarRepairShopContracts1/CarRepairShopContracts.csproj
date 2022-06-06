@@ -4,4 +4,10 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.16.0" />
+    <PackageReference Include="Microsoft.ReportViewer.Runtime.Common" Version="12.0.2402.15" />
+    <PackageReference Include="PdfSharp.MigraDoc.Standard" Version="1.51.15" />
+  </ItemGroup>
+
 </Project>

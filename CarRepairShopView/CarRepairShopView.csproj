@@ -7,10 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.16.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="PdfSharp.MigraDoc.Standard" Version="1.51.15" />
+    <PackageReference Include="ReportViewerCore.WinForms" Version="15.1.16" />
     <PackageReference Include="Unity" Version="5.11.10" />
   </ItemGroup>
 
